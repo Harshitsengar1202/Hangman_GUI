@@ -1,10 +1,11 @@
 import pygame
 import math
+import random
 
 #############WINDOW#########################
 
 pygame.init()
-WIDTH,HEIGHT = 800, 500
+WIDTH,HEIGHT = 850, 500
 win = pygame.display.set_mode((WIDTH,HEIGHT))
 pygame.display.set_caption("Hangman Game!!")
 
@@ -18,6 +19,19 @@ for i in range(7):
 ##############GAME VARIABLES################
 
 hangman_status = 0
+words = [
+'THEGODFATHER', 'FORRESTGUMP', 'THEDARKNIGHT', 'VERTIGO',
+'SOMELIKEITSHOT',
+'AHARDDAYSNIGHT', 'INCEPTION', 'INTERSTELLAR', 'THEMATRIX', 'PULPFICTION',
+'FIGHTCLUB', 'THEDEPARTED', 'THEPRESTIGE',
+'THEREVENANT', 'DUNKIRK', 'JOKER',
+'THEBIGLEBOWSKI', 'SNATCH', 'GLADIATOR', 'WHIPLASH',
+'MEMENTO', 'CHILDRENOFMEN',
+'SKYFALL', 'ARRIVAL', 'BABYDRIVER'
+]
+#words="DEVELOPER"
+word=random.choice(words)
+guessed=[]
 
 #############BUTTONS###################
 
@@ -40,6 +54,8 @@ BLACK = (0,0,0)
 ########################FONTS#####################
 
 LETTER_FONT = pygame.font.SysFont('comicsans', 32)
+WORD_FONT = pygame.font.SysFont('comicsans', 45)
+TITLE_FONT = pygame.font.SysFont('comicsans', 70)
 
 #################FPS######################
 
@@ -47,10 +63,36 @@ FPS = 90
 clock = pygame.time.Clock()
 run = True
 
+###################MESSAGEFUNCTION###########
+
+def display_message(message):
+    pygame.time.delay(1000)
+    win.fill(WHITE)
+    text = WORD_FONT.render(message,1,BLACK)
+    win.blit(text,(WIDTH/2-text.get_width()/2, HEIGHT/2-text.get_height()/2))
+    pygame.display.update()
+    pygame.time.delay(3000)
+    
 #############DRAWFUNCTION################
 
 def draw():
     win.fill(WHITE)
+
+    #################TITLE################
+
+    text = TITLE_FONT.render("HANGMAN", 1, BLACK)
+    win.blit(text, (WIDTH/2 - text.get_width()/2, 5))
+
+    #############DRWAWORD##################
+
+    display_word=""
+    for letter in word:
+        if letter in guessed:
+            display_word+= letter + " "
+        else:
+            display_word+="_ "
+    text = WORD_FONT.render(display_word,1,BLACK)
+    win.blit(text,(300,200))
 
     ###############DRAWBUTTONS#################
     for letter in letters:
@@ -60,14 +102,13 @@ def draw():
             text = LETTER_FONT.render(ltr, 1, BLACK)
             win.blit(text,(x - text.get_width()/2, y - text.get_height()/2))
 
-    win.blit(images[hangman_status], (150,100))
+    win.blit(images[hangman_status], (90,100))
     pygame.display.update()
 
 ###############MAINLOOP##################
 
 while run:
     clock.tick(FPS)
-    draw()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
@@ -79,6 +120,22 @@ while run:
                     dis = math.sqrt((x - m_x)**2 + (y - m_y)**2)
                     if dis<RADIUS:
                         letter[3]=False
-            
+                        guessed.append(ltr)
+                        if ltr not in word:
+                            hangman_status+=1
+    draw()
+    won=True
+    for letter in word:
+        if letter not in guessed:
+            won=False
+            break
+    
+    if won:
+        display_message("YOU WON!!!")
+        break
+
+    if hangman_status == 6:
+        display_message("YOU LOST!!")
+        break
 
 pygame.quit()
